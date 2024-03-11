@@ -23,6 +23,8 @@ import at.hannibal2.skyhanni.config.features.inventory.InventoryConfig.ItemNumbe
 import at.hannibal2.skyhanni.config.features.inventory.InventoryConfig.ItemNumberEntry.VACUUM_GARDEN
 import at.hannibal2.skyhanni.data.PetAPI
 import at.hannibal2.skyhanni.events.RenderItemTipEvent
+import at.hannibal2.skyhanni.features.garden.GardenPlotAPI
+import at.hannibal2.skyhanni.features.garden.GardenPlotAPI.pests
 import at.hannibal2.skyhanni.features.garden.pests.PestAPI
 import at.hannibal2.skyhanni.features.skillprogress.SkillType
 import at.hannibal2.skyhanni.utils.ConfigUtils
@@ -37,6 +39,7 @@ import at.hannibal2.skyhanni.utils.ItemUtils.name
 import at.hannibal2.skyhanni.utils.NEUInternalName.Companion.asInternalName
 import at.hannibal2.skyhanni.utils.NumberUtil
 import at.hannibal2.skyhanni.utils.NumberUtil.formatLong
+import at.hannibal2.skyhanni.utils.NumberUtil.formatNumber
 import at.hannibal2.skyhanni.utils.NumberUtil.romanToDecimal
 import at.hannibal2.skyhanni.utils.NumberUtil.romanToDecimalIfNecessary
 import at.hannibal2.skyhanni.utils.SkyBlockItemModifierUtils.getBottleOfJyrreSeconds
@@ -61,6 +64,10 @@ object ItemDisplayOverlayFeatures {
     private val gardenVacuumPatterm by patternGroup.pattern(
         "vacuum",
         "§7Vacuum Bag: §6(?<amount>\\d*) Pests?"
+    )
+    private val pestInventoryPattern by patternGroup.pattern(
+        "inventory",
+        "§4§lൠ §cThis plot has §6(?<amount>\\d) Pests?§c!"
     )
     private val harvestPattern by patternGroup.pattern(
         "harvest",
@@ -233,6 +240,14 @@ object ItemDisplayOverlayFeatures {
                     }
                 }
             }
+        }
+
+        if (itemName.startsWith("Plot -")) {
+                for (line in lore) {
+                    pestInventoryPattern.matchMatcher(line) {
+                        return "${group("amount").formatLong()}"
+                    }
+                }
         }
 
         if (BOTTLE_OF_JYRRE.isSelected() && internalName == "NEW_BOTTLE_OF_JYRRE".asInternalName()) {
